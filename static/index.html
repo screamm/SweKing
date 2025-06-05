@@ -95,6 +95,52 @@
             color: #fecc00;
             font-weight: bold;
         }
+        
+        .audio-controls {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .audio-btn {
+            background: rgba(254, 204, 0, 0.2);
+            border: 2px solid #fecc00;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .audio-btn:hover {
+            background: rgba(254, 204, 0, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .audio-btn.active {
+            background: #fecc00;
+            color: #006aa7;
+        }
+        
+        .start-game-btn {
+            background: #fecc00;
+            color: #006aa7;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .start-game-btn:hover {
+            background: #ffdd00;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -102,8 +148,19 @@
         <h1>🇸🇪 Kungen Hoppar Flaggor 👑</h1>
         <div class="score">Kronor: <span id="score">0</span></div>
         <canvas id="gameCanvas" width="800" height="400"></canvas>
-        <div class="controls">
+        <button id="startGameBtn" class="start-game-btn" style="display: block;">
+            🎵 Starta Spel Med Ljud! 🎵
+        </button>
+        
+        <div class="controls" id="gameControls" style="display: none;">
             Tryck MELLANSLAG för att hoppa! 
+        </div>
+        
+        <div class="audio-controls" id="audioControls" style="display: none;">
+            <button id="soundToggle" class="audio-btn active">🔊 Ljud</button>
+            <button id="musicToggle" class="audio-btn active">🎵 Musik</button>
+            <button id="volumeDown" class="audio-btn">🔉</button>
+            <button id="volumeUp" class="audio-btn">🔊</button>
         </div>
         
         <div class="high-scores">
@@ -118,6 +175,7 @@
         </div>
     </div>
     
+    <script src="audio.js"></script>
     <script src="game.js"></script>
 </body>
 </html> 

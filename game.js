@@ -6,9 +6,10 @@ const scoreElement = document.getElementById('score');
 // Spel variabler
 let gameSpeed = 3.5; // Snabbare start
 let score = 0;
-let gameRunning = true;
+let gameRunning = false; // Startar pausat för ljud-aktivering
 let playerName = '';
 let highScores = [];
+let audioInitialized = false;
 
 // Kung karaktär
 const king = {
@@ -205,6 +206,14 @@ function update() {
             height: flagHeight
         })) {
             gameRunning = false;
+            // Spela kollisions- och game over-ljud
+            if (window.swedishAudio) {
+                window.swedishAudio.playSound('bumpp');
+                setTimeout(() => {
+                    window.swedishAudio.playSound('nej_da');
+                    window.swedishAudio.stopMusic();
+                }, 200);
+            }
             showGameOver();
             return;
         }
@@ -230,6 +239,11 @@ function update() {
             score += 10;
             scoreElement.textContent = score;
             crowns.splice(i, 1);
+            
+            // Spela krona-ljud
+            if (window.swedishAudio) {
+                window.swedishAudio.playSound('kling');
+            }
         }
     }
     
@@ -314,6 +328,11 @@ function showGameOver() {
     const isHighScore = highScores.length < 10 || score > highScores[highScores.length - 1].score;
     
     if (isHighScore) {
+        // Spela fanfar för nytt rekord
+        if (window.swedishAudio) {
+            setTimeout(() => window.swedishAudio.playSound('fanfar'), 500);
+        }
+        
         const name = prompt('🏆 NYTT REKORD! 🏆\nSkriv ditt namn för topplistan:', playerName || 'Spelare');
         if (name) {
             playerName = name;
@@ -339,6 +358,11 @@ function resetGame() {
     gameSpeed = 3.5; // Snabbare start
     scoreElement.textContent = score;
     gameRunning = true;
+    
+    // Starta bakgrundsmusik igen
+    if (window.swedishAudio && window.swedishAudio.musicEnabled) {
+        setTimeout(() => window.swedishAudio.startMusic(), 500);
+    }
 }
 
 // Huvudspelloop
@@ -354,8 +378,74 @@ document.addEventListener('keydown', (event) => {
         event.preventDefault();
         king.jumping = true;
         king.velocityY = -15;
+        
+        // Spela hopp-ljud
+        if (window.swedishAudio) {
+            window.swedishAudio.playSound('hoppla');
+        }
     }
 });
+
+// Audio kontroller
+function initializeAudioControls() {
+    const startBtn = document.getElementById('startGameBtn');
+    const gameControls = document.getElementById('gameControls');
+    const audioControls = document.getElementById('audioControls');
+    const soundToggle = document.getElementById('soundToggle');
+    const musicToggle = document.getElementById('musicToggle');
+    const volumeDown = document.getElementById('volumeDown');
+    const volumeUp = document.getElementById('volumeUp');
+
+    // Starta spel med ljud
+    startBtn.addEventListener('click', async () => {
+        if (window.swedishAudio) {
+            await window.swedishAudio.enableAudio();
+            audioInitialized = true;
+            
+            // Visa kontroller och starta spel
+            startBtn.style.display = 'none';
+            gameControls.style.display = 'block';
+            audioControls.style.display = 'flex';
+            
+            // Starta spel och musik
+            gameRunning = true;
+            window.swedishAudio.startMusic();
+        }
+    });
+
+    // Ljud on/off
+    soundToggle.addEventListener('click', () => {
+        if (window.swedishAudio) {
+            const enabled = window.swedishAudio.toggleSound();
+            soundToggle.classList.toggle('active', enabled);
+            soundToggle.textContent = enabled ? '🔊 Ljud' : '🔇 Ljud';
+        }
+    });
+
+    // Musik on/off
+    musicToggle.addEventListener('click', () => {
+        if (window.swedishAudio) {
+            const enabled = window.swedishAudio.toggleMusic();
+            musicToggle.classList.toggle('active', enabled);
+            musicToggle.textContent = enabled ? '🎵 Musik' : '🎵 Musik';
+        }
+    });
+
+    // Volym kontroller
+    volumeDown.addEventListener('click', () => {
+        if (window.swedishAudio) {
+            const newVolume = Math.max(0, window.swedishAudio.masterVolume - 0.1);
+            window.swedishAudio.setVolume(newVolume);
+        }
+    });
+
+    volumeUp.addEventListener('click', () => {
+        if (window.swedishAudio) {
+            const newVolume = Math.min(1, window.swedishAudio.masterVolume + 0.1);
+            window.swedishAudio.setVolume(newVolume);
+        }
+    });
+}
 
 // Skapa nya objekt
 setInterval(() => {
@@ -373,4 +463,5 @@ setInterval(() => {
 // Starta spel
 initClouds();
 loadHighScores(); // Ladda topplista vid start
+initializeAudioControls(); // Initiera ljud-kontroller
 gameLoop(); 
