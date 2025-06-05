@@ -141,6 +141,157 @@
             background: #ffdd00;
             transform: scale(1.05);
         }
+        
+        .multiplayer-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .multiplayer-section {
+            margin-bottom: 25px;
+        }
+        
+        .multiplayer-section h3 {
+            color: #fecc00;
+            margin: 0 0 15px 0;
+            text-align: center;
+            font-size: 1.3em;
+        }
+        
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .social-btn {
+            background: linear-gradient(45deg, #fecc00, #ffdd00);
+            color: #006aa7;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .social-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(254, 204, 0, 0.4);
+        }
+        
+        .challenge-item {
+            background: rgba(254, 204, 0, 0.1);
+            border: 1px solid rgba(254, 204, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .challenge-title {
+            color: #fecc00;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .challenge-progress {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            height: 8px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+        
+        .challenge-progress-bar {
+            background: linear-gradient(90deg, #fecc00, #ffdd00);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .tournament-item {
+            background: linear-gradient(135deg, rgba(254, 204, 0, 0.2), rgba(0, 106, 167, 0.2));
+            border: 2px solid #fecc00;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .leaderboard {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(254, 204, 0, 0.2);
+        }
+        
+        .leaderboard-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .multiplayer-status {
+            background: rgba(0, 106, 167, 0.2);
+            border: 1px solid #006aa7;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .status-connected {
+            color: #00ff00;
+        }
+        
+        .status-disconnected {
+            color: #ff6b6b;
+        }
+        
+        .race-invitation {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .player-name-input {
+            background: rgba(254, 204, 0, 0.1);
+            border: 2px solid #fecc00;
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-size: 16px;
+            margin: 10px;
+            text-align: center;
+        }
+        
+        .player-name-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
     </style>
 </head>
 <body>
@@ -173,9 +324,75 @@
                 </div>
             </div>
         </div>
+
+        <!-- Multiplayer & Social Panel -->
+        <div class="multiplayer-panel" id="multiplayerPanel" style="display: none;">
+            
+            <!-- Player Profile -->
+            <div class="multiplayer-section">
+                <h3>👑 Din Profil</h3>
+                <input type="text" id="playerNameInput" class="player-name-input" placeholder="Skriv ditt namn...">
+                <div class="multiplayer-status" id="connectionStatus">
+                    <span class="status-disconnected">📡 Inte ansluten till multiplayer</span>
+                </div>
+            </div>
+
+            <!-- Social Sharing -->
+            <div class="multiplayer-section">
+                <h3>📱 Dela ditt rekord!</h3>
+                <div class="social-buttons">
+                    <button class="social-btn" onclick="shareToTwitter()">🐦 Twitter</button>
+                    <button class="social-btn" onclick="shareToFacebook()">📘 Facebook</button>
+                    <button class="social-btn" onclick="shareToWhatsApp()">💬 WhatsApp</button>
+                    <button class="social-btn" onclick="shareNative()">📱 Dela</button>
+                </div>
+            </div>
+
+            <!-- Daily Challenges -->
+            <div class="multiplayer-section">
+                <h3>⭐ Dagens Utmaningar</h3>
+                <div id="dailyChallenges">
+                    <div class="challenge-item">
+                        <div class="challenge-title">Laddar utmaningar...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Tournament -->
+            <div class="multiplayer-section">
+                <h3>🏆 Veckans Turnering</h3>
+                <div id="weeklyTournament">
+                    <div class="tournament-item">
+                        <div style="color: #fecc00; font-size: 1.2em; margin-bottom: 10px;">
+                            👑 Veckans Kung-mästerskap
+                        </div>
+                        <div>Laddar turnering...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Racing -->
+            <div class="multiplayer-section" id="racingSection" style="display: none;">
+                <h3>🏃‍♂️ Real-time Racing</h3>
+                <div id="raceStatus">
+                    <button class="social-btn" onclick="findRaceOpponent()">🏁 Hitta Motståndare</button>
+                </div>
+                <div id="raceInvitations"></div>
+            </div>
+
+            <!-- Connected Players -->
+            <div class="multiplayer-section" id="playersSection" style="display: none;">
+                <h3>👥 Anslutna Spelare</h3>
+                <div id="connectedPlayers">
+                    <div>Ingen ansluten ännu...</div>
+                </div>
+            </div>
+
+        </div>
     </div>
     
     <script src="audio.js"></script>
+    <script src="multiplayer.js"></script>
     <script src="game.js"></script>
 </body>
 </html> 

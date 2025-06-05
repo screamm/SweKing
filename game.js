@@ -10,6 +10,10 @@ let gameRunning = false; // Startar pausat för ljud-aktivering
 let playerName = '';
 let highScores = [];
 let audioInitialized = false;
+let multiplayerInitialized = false;
+let totalJumps = 0;
+let gameStartTime = 0;
+let totalCoinsCollected = 0;
 
 // Kung karaktär
 const king = {
@@ -214,6 +218,18 @@ function update() {
                     window.swedishAudio.stopMusic();
                 }, 200);
             }
+            
+            // Multiplayer: End race if active
+            if (window.swedishMultiplayer && window.swedishMultiplayer.isRacing) {
+                window.swedishMultiplayer.endRace(score);
+            }
+            
+            // Update survival challenge
+            const survivalTime = Date.now() - gameStartTime;
+            if (window.swedishMultiplayer && survivalTime > 0) {
+                window.swedishMultiplayer.updateChallengeProgress('daily_survivor', survivalTime);
+            }
+            
             showGameOver();
             return;
         }
@@ -243,6 +259,17 @@ function update() {
             // Spela krona-ljud
             if (window.swedishAudio) {
                 window.swedishAudio.playSound('kling');
+            }
+            
+            // Uppdatera challenge progress
+            totalCoinsCollected += 10;
+            if (window.swedishMultiplayer) {
+                window.swedishMultiplayer.updateChallengeProgress('daily_collector', totalCoinsCollected);
+                
+                // Real-time racing update
+                if (window.swedishMultiplayer.isRacing) {
+                    window.swedishMultiplayer.updateRaceProgress(score, king.x);
+                }
             }
         }
     }
@@ -358,6 +385,7 @@ function resetGame() {
     gameSpeed = 3.5; // Snabbare start
     scoreElement.textContent = score;
     gameRunning = true;
+    gameStartTime = Date.now();
     
     // Starta bakgrundsmusik igen
     if (window.swedishAudio && window.swedishAudio.musicEnabled) {
@@ -382,6 +410,12 @@ document.addEventListener('keydown', (event) => {
         // Spela hopp-ljud
         if (window.swedishAudio) {
             window.swedishAudio.playSound('hoppla');
+        }
+        
+        // Räkna hopp för challenges
+        totalJumps++;
+        if (window.swedishMultiplayer) {
+            window.swedishMultiplayer.updateChallengeProgress('daily_jumper', totalJumps);
         }
     }
 });
@@ -460,8 +494,258 @@ setInterval(() => {
     }
 }, 1500);
 
+// Multiplayer & Social Functions
+function initializeMultiplayer() {
+    if (!window.swedishMultiplayer) return;
+
+    const multiplayerPanel = document.getElementById('multiplayerPanel');
+    const playerNameInput = document.getElementById('playerNameInput');
+    const connectionStatus = document.getElementById('connectionStatus');
+
+    // Visa multiplayer panel
+    multiplayerPanel.style.display = 'block';
+
+    // Sätt player name från localStorage
+    if (window.swedishMultiplayer.playerName && window.swedishMultiplayer.playerName !== 'Okänd Spelare') {
+        playerNameInput.value = window.swedishMultiplayer.playerName;
+    }
+
+    // Player name input
+    playerNameInput.addEventListener('change', (e) => {
+        const name = e.target.value.trim();
+        if (name) {
+            window.swedishMultiplayer.setPlayerName(name);
+        }
+    });
+
+    // Multiplayer events
+    window.swedishMultiplayer.on('connected', () => {
+        connectionStatus.innerHTML = '<span class="status-connected">🔗 Ansluten till multiplayer!</span>';
+        document.getElementById('racingSection').style.display = 'block';
+        document.getElementById('playersSection').style.display = 'block';
+    });
+
+    window.swedishMultiplayer.on('disconnected', () => {
+        connectionStatus.innerHTML = '<span class="status-disconnected">📡 Frånkopplad från multiplayer</span>';
+        document.getElementById('racingSection').style.display = 'none';
+        document.getElementById('playersSection').style.display = 'none';
+    });
+
+    window.swedishMultiplayer.on('race_invitation', (data) => {
+        showRaceInvitation(data);
+    });
+
+    window.swedishMultiplayer.on('race_started', (data) => {
+        showRaceStarted(data);
+    });
+
+    window.swedishMultiplayer.on('player_joined', (data) => {
+        updateConnectedPlayers();
+    });
+
+    window.swedishMultiplayer.on('player_left', (data) => {
+        updateConnectedPlayers();
+    });
+
+    // Ladda challenges och tournament
+    loadDailyChallenges();
+    loadWeeklyTournament();
+
+    // Försök ansluta till multiplayer
+    setTimeout(() => {
+        window.swedishMultiplayer.connect();
+    }, 1000);
+
+    multiplayerInitialized = true;
+}
+
+async function loadDailyChallenges() {
+    if (!window.swedishMultiplayer) return;
+
+    const challenges = await window.swedishMultiplayer.loadDailyChallenges();
+    const challengesContainer = document.getElementById('dailyChallenges');
+    
+    challengesContainer.innerHTML = challenges.map(challenge => {
+        const progressPercent = Math.min(100, (challenge.progress / challenge.target) * 100);
+        const isCompleted = challenge.progress >= challenge.target;
+        
+        return `
+            <div class="challenge-item ${isCompleted ? 'completed' : ''}">
+                <div class="challenge-title">${challenge.title}</div>
+                <div style="color: #ccc; font-size: 0.9em; margin-bottom: 8px;">
+                    ${challenge.description}
+                </div>
+                <div class="challenge-progress">
+                    <div class="challenge-progress-bar" style="width: ${progressPercent}%"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8em;">
+                    <span>${challenge.progress}/${challenge.target}</span>
+                    <span style="color: #fecc00;">🎁 ${challenge.reward}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadWeeklyTournament() {
+    if (!window.swedishMultiplayer) return;
+
+    const tournament = await window.swedishMultiplayer.loadWeeklyTournament();
+    const tournamentContainer = document.getElementById('weeklyTournament');
+    
+    const timeLeft = tournament.endTime - Date.now();
+    const daysLeft = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hoursLeft = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    tournamentContainer.innerHTML = `
+        <div class="tournament-item">
+            <div style="color: #fecc00; font-size: 1.4em; margin-bottom: 10px;">
+                ${tournament.title}
+            </div>
+            <div style="margin-bottom: 15px;">
+                ${tournament.description}
+            </div>
+            <div style="color: #ffdd00; font-weight: bold; margin-bottom: 10px;">
+                🏆 Pris: ${tournament.prize}
+            </div>
+            <div style="margin-bottom: 15px;">
+                👥 ${tournament.participants} deltagare<br>
+                ⏰ ${daysLeft}d ${hoursLeft}h kvar
+            </div>
+            <div class="leaderboard">
+                <div style="color: #fecc00; font-weight: bold; margin-bottom: 10px;">
+                    🏆 Topplista
+                </div>
+                ${tournament.leaderboard.slice(0, 5).map((player, index) => `
+                    <div class="leaderboard-entry">
+                        <span>${index + 1}. ${player.crown} ${player.name}</span>
+                        <span style="color: #fecc00;">${player.score}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Social sharing functions
+function shareToTwitter() {
+    if (window.swedishMultiplayer) {
+        window.swedishMultiplayer.shareScore(score, 'twitter');
+    }
+}
+
+function shareToFacebook() {
+    if (window.swedishMultiplayer) {
+        window.swedishMultiplayer.shareScore(score, 'facebook');
+    }
+}
+
+function shareToWhatsApp() {
+    if (window.swedishMultiplayer) {
+        window.swedishMultiplayer.shareScore(score, 'whatsapp');
+    }
+}
+
+function shareNative() {
+    if (window.swedishMultiplayer) {
+        window.swedishMultiplayer.shareScore(score, 'native');
+    }
+}
+
+// Racing functions
+function findRaceOpponent() {
+    if (!window.swedishMultiplayer) return;
+    
+    // För demo - simulera att hitta motståndare
+    setTimeout(() => {
+        window.swedishMultiplayer.handleRaceInvitation({
+            invitationId: 'demo_race_' + Date.now(),
+            fromPlayer: 'Kung Carl XVI Gustaf',
+            gameMode: 'speed_race'
+        });
+    }, 2000);
+}
+
+function inviteToRace(playerId) {
+    if (window.swedishMultiplayer) {
+        window.swedishMultiplayer.inviteToRace(playerId);
+    }
+}
+
+function acceptRace(invitationId) {
+    if (window.swedishMultiplayer) {
+        window.swedishMultiplayer.acceptRaceInvitation(invitationId);
+        // Ta bort inbjudan från UI
+        document.getElementById('raceInvitations').innerHTML = '';
+    }
+}
+
+function declineRace(invitationId) {
+    // Ta bort inbjudan från UI
+    document.getElementById('raceInvitations').innerHTML = '';
+}
+
+function showRaceInvitation(data) {
+    const invitationsContainer = document.getElementById('raceInvitations');
+    
+    const invitationDiv = document.createElement('div');
+    invitationDiv.className = 'challenge-item';
+    invitationDiv.innerHTML = `
+        <div style="color: #fecc00; font-weight: bold;">🏁 Race-inbjudan!</div>
+        <div>${data.fromPlayer} vill tävla mot dig!</div>
+        <div style="margin-top: 10px;">
+            <button class="race-invitation" onclick="acceptRace('${data.invitationId}')">
+                ✅ Acceptera Race
+            </button>
+            <button class="social-btn" onclick="declineRace('${data.invitationId}')" style="margin-left: 10px;">
+                ❌ Avböj
+            </button>
+        </div>
+    `;
+    
+    invitationsContainer.appendChild(invitationDiv);
+    
+    // Ta bort inbjudan efter 30 sekunder
+    setTimeout(() => {
+        invitationDiv.remove();
+    }, 30000);
+}
+
+function showRaceStarted(data) {
+    const raceStatus = document.getElementById('raceStatus');
+    raceStatus.innerHTML = `
+        <div style="color: #00ff00; font-weight: bold; text-align: center;">
+            🏁 RACE STARTAT! 🏁<br>
+            Tävlar mot: ${data.opponents.map(o => o.name).join(', ')}<br>
+            <div style="font-size: 0.8em; margin-top: 5px;">
+                Första till 500 poäng vinner!
+            </div>
+        </div>
+    `;
+}
+
+function updateConnectedPlayers() {
+    if (!window.swedishMultiplayer) return;
+
+    const players = window.swedishMultiplayer.getConnectedPlayers();
+    const playersContainer = document.getElementById('connectedPlayers');
+    
+    if (players.length === 0) {
+        playersContainer.innerHTML = '<div>Ingen ansluten ännu...</div>';
+        return;
+    }
+    
+    playersContainer.innerHTML = players.map(player => `
+        <div class="leaderboard-entry">
+            <span>${player.avatar} ${player.name} (Lvl ${player.level})</span>
+            <button class="social-btn" onclick="inviteToRace('${player.id}')">🏁 Utmana</button>
+        </div>
+    `).join('');
+}
+
 // Starta spel
 initClouds();
 loadHighScores(); // Ladda topplista vid start
 initializeAudioControls(); // Initiera ljud-kontroller
+initializeMultiplayer(); // Initiera multiplayer
 gameLoop(); 
