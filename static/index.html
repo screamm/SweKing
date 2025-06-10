@@ -3,396 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kungen Hoppar Flaggor - Nationaldag Spel 🇸🇪</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #006aa7 0%, #fecc00 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Arial', sans-serif;
-            color: white;
-        }
-        
-        .game-container {
-            text-align: center;
-            background: rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        
-        h1 {
-            margin: 0 0 20px 0;
-            color: #fecc00;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            font-size: 2.5em;
-        }
-        
-        canvas {
-            border: 3px solid #fecc00;
-            border-radius: 10px;
-            background: #87ceeb;
-            display: block;
-            margin: 0 auto;
-        }
-        
-        .controls {
-            margin-top: 15px;
-            color: white;
-            font-size: 1.2em;
-        }
-        
-        .score {
-            font-size: 1.5em;
-            margin: 10px 0;
-            color: #fecc00;
-            font-weight: bold;
-        }
-        
-        .high-scores {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .high-scores h3 {
-            color: #fecc00;
-            margin: 0 0 15px 0;
-            text-align: center;
-        }
-        
-        .score-entry {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(254, 204, 0, 0.3);
-        }
-        
-        .score-entry:last-child {
-            border-bottom: none;
-        }
-        
-        .rank {
-            color: #fecc00;
-            font-weight: bold;
-            width: 25px;
-        }
-        
-        .name {
-            flex: 1;
-            padding: 0 10px;
-        }
-        
-        .score-value {
-            color: #fecc00;
-            font-weight: bold;
-        }
-        
-        .audio-controls {
-            margin-top: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .audio-btn {
-            background: rgba(254, 204, 0, 0.2);
-            border: 2px solid #fecc00;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        .audio-btn:hover {
-            background: rgba(254, 204, 0, 0.4);
-            transform: scale(1.05);
-        }
-        
-        .audio-btn.active {
-            background: #fecc00;
-            color: #006aa7;
-        }
-        
-        .start-game-btn {
-            background: #fecc00;
-            color: #006aa7;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 15px 0;
-            transition: all 0.3s ease;
-        }
-        
-        .start-game-btn:hover {
-            background: #ffdd00;
-            transform: scale(1.05);
-        }
-        
-        .multiplayer-panel {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .multiplayer-section {
-            margin-bottom: 25px;
-        }
-        
-        .multiplayer-section h3 {
-            color: #fecc00;
-            margin: 0 0 15px 0;
-            text-align: center;
-            font-size: 1.3em;
-        }
-        
-        .social-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
-        
-        .social-btn {
-            background: linear-gradient(45deg, #fecc00, #ffdd00);
-            color: #006aa7;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        
-        .social-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(254, 204, 0, 0.4);
-        }
-        
-        .challenge-item {
-            background: rgba(254, 204, 0, 0.1);
-            border: 1px solid rgba(254, 204, 0, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 10px 0;
-        }
-        
-        .challenge-title {
-            color: #fecc00;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .challenge-progress {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            height: 8px;
-            margin: 8px 0;
-            overflow: hidden;
-        }
-        
-        .challenge-progress-bar {
-            background: linear-gradient(90deg, #fecc00, #ffdd00);
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-        
-        .tournament-item {
-            background: linear-gradient(135deg, rgba(254, 204, 0, 0.2), rgba(0, 106, 167, 0.2));
-            border: 2px solid #fecc00;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .leaderboard {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        
-        .leaderboard-entry {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(254, 204, 0, 0.2);
-        }
-        
-        .leaderboard-entry:last-child {
-            border-bottom: none;
-        }
-        
-        .multiplayer-status {
-            background: rgba(0, 106, 167, 0.2);
-            border: 1px solid #006aa7;
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-        .status-connected {
-            color: #00ff00;
-        }
-        
-        .status-disconnected {
-            color: #ff6b6b;
-        }
-        
-        .race-invitation {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
-            color: white;
-            border: none;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .player-name-input {
-            background: rgba(254, 204, 0, 0.1);
-            border: 2px solid #fecc00;
-            border-radius: 8px;
-            padding: 10px;
-            color: white;
-            font-size: 16px;
-            margin: 10px;
-            text-align: center;
-        }
-        
-        .player-name-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-    </style>
+    <title>🇸🇪 Kungen Hoppar Flaggor - Svenska Spel</title>
+    
+    <!-- Svensk flagga favicon med krona -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    
+    <meta name="description" content="Spela som kungen och hoppa över svenska flaggor! Samla kronor och sätt nya rekord i detta roliga svenska plattformsspel.">
+    <meta name="keywords" content="svenska spel, svensk flagga, kung, hoppa, plattformsspel, nationaldag">
+    <meta name="author" content="David Rydegren">
+    
+    <!-- Open Graph för social sharing -->
+    <meta property="og:title" content="🇸🇪 Kungen Hoppar Flaggor">
+    <meta property="og:description" content="Spela som kungen och hoppa över svenska flaggor!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kungen-hoppar-flaggor.davidrydgren.workers.dev">
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
-        <h1>🇸🇪 Kungen Hoppar Flaggor 👑</h1>
-        <div class="score">Kronor: <span id="score">0</span></div>
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-        <button id="startGameBtn" class="start-game-btn" style="display: block;">
-            🎵 Starta Spel Med Ljud! 🎵
-        </button>
+        <!-- Menu system kommer att injiceras här av menu.js -->
         
-        <div class="controls" id="gameControls" style="display: none;">
-            Tryck MELLANSLAG för att hoppa! 
-        </div>
-        
-        <div class="audio-controls" id="audioControls" style="display: none;">
-            <button id="soundToggle" class="audio-btn active">🔊 Ljud</button>
-            <button id="musicToggle" class="audio-btn active">🎵 Musik</button>
-            <button id="volumeDown" class="audio-btn">🔉</button>
-            <button id="volumeUp" class="audio-btn">🔊</button>
-        </div>
-        
-        <div class="high-scores">
-            <h3>🏆 TOPPLISTA 🏆</h3>
-            <div id="highScoreList">
-                <div class="score-entry">
-                    <span class="rank">1.</span>
-                    <span class="name">Laddar...</span>
-                    <span class="score-value">-</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Multiplayer & Social Panel -->
-        <div class="multiplayer-panel" id="multiplayerPanel" style="display: none;">
+        <!-- Gamla spel-UI - dolt som standard -->
+        <div id="legacyGameContent" style="display: none;">
+            <h1>🇸🇪 Kungen Hoppar Flaggor 👑</h1>
+            <div class="score">Kronor: <span id="score">0</span></div>
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+            <button id="startGameBtn" class="start-game-btn" style="display: block;">
+                Starta Spel
+            </button>
             
-            <!-- Player Profile -->
-            <div class="multiplayer-section">
-                <h3>👑 Din Profil</h3>
-                <input type="text" id="playerNameInput" class="player-name-input" placeholder="Skriv ditt namn...">
-                <div class="multiplayer-status" id="connectionStatus">
-                    <span class="status-disconnected">📡 Inte ansluten till multiplayer</span>
-                </div>
+            <div class="controls" id="gameControls" style="display: none;">
+                Tryck MELLANSLAG för att hoppa! 
             </div>
-
-            <!-- Social Sharing -->
-            <div class="multiplayer-section">
-                <h3>📱 Dela ditt rekord!</h3>
-                <div class="social-buttons">
-                    <button class="social-btn" onclick="shareToTwitter()">🐦 Twitter</button>
-                    <button class="social-btn" onclick="shareToFacebook()">📘 Facebook</button>
-                    <button class="social-btn" onclick="shareToWhatsApp()">💬 WhatsApp</button>
-                    <button class="social-btn" onclick="shareNative()">📱 Dela</button>
-                </div>
+            
+            <div class="audio-controls" id="audioControls" style="display: none;">
+                <button id="soundToggle" class="audio-btn active">🔊 Ljud</button>
+                <button id="musicToggle" class="audio-btn active">🎵 Musik</button>
+                <button id="volumeDown" class="audio-btn">🔉</button>
+                <button id="volumeUp" class="audio-btn">🔊</button>
             </div>
-
-            <!-- Daily Challenges -->
-            <div class="multiplayer-section">
-                <h3>⭐ Dagens Utmaningar</h3>
-                <div id="dailyChallenges">
-                    <div class="challenge-item">
-                        <div class="challenge-title">Laddar utmaningar...</div>
+            
+            <div class="high-scores">
+                <h3>🏆 TOPPLISTA 🏆</h3>
+                <div id="highScoreList">
+                    <div class="score-entry">
+                        <span class="rank">1.</span>
+                        <span class="name">Laddar...</span>
+                        <span class="score-value">-</span>
                     </div>
                 </div>
             </div>
-
-            <!-- Weekly Tournament -->
-            <div class="multiplayer-section">
-                <h3>🏆 Veckans Turnering</h3>
-                <div id="weeklyTournament">
-                    <div class="tournament-item">
-                        <div style="color: #fecc00; font-size: 1.2em; margin-bottom: 10px;">
-                            👑 Veckans Kung-mästerskap
-                        </div>
-                        <div>Laddar turnering...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Real-time Racing -->
-            <div class="multiplayer-section" id="racingSection" style="display: none;">
-                <h3>🏃‍♂️ Real-time Racing</h3>
-                <div id="raceStatus">
-                    <button class="social-btn" onclick="findRaceOpponent()">🏁 Hitta Motståndare</button>
-                </div>
-                <div id="raceInvitations"></div>
-            </div>
-
-            <!-- Connected Players -->
-            <div class="multiplayer-section" id="playersSection" style="display: none;">
-                <h3>👥 Anslutna Spelare</h3>
-                <div id="connectedPlayers">
-                    <div>Ingen ansluten ännu...</div>
-                </div>
-            </div>
-
         </div>
+
+
     </div>
     
     <script src="audio.js"></script>
-    <script src="multiplayer.js"></script>
+    <script src="mobile.js"></script>
+    <script src="menu.js"></script>
     <script src="game.js"></script>
 </body>
 </html> 

@@ -1,0 +1,22 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue background -->
+  <rect width="32" height="32" fill="#006AA7"/>
+  
+  <!-- Yellow cross - horizontal bar -->
+  <rect x="0" y="12" width="32" height="8" fill="#FECC00"/>
+  
+  <!-- Yellow cross - vertical bar -->
+  <rect x="10" y="0" width="4" height="32" fill="#FECC00"/>
+  
+  <!-- Small crown detail for gaming theme -->
+  <g transform="translate(20, 6)">
+    <rect x="0" y="4" width="8" height="4" fill="#FFD700"/>
+    <rect x="1" y="2" width="2" height="6" fill="#FFD700"/>
+    <rect x="3" y="1" width="2" height="7" fill="#FFD700"/>
+    <rect x="5" y="2" width="2" height="6" fill="#FFD700"/>
+    <!-- Crown jewels -->
+    <circle cx="2" cy="3" r="0.5" fill="#FF0000"/>
+    <circle cx="4" cy="2" r="0.5" fill="#FF0000"/>
+    <circle cx="6" cy="3" r="0.5" fill="#FF0000"/>
+  </g>
+</svg> 

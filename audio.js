@@ -224,21 +224,32 @@ class SwedishAudioManager {
 
     // Aktivera ljud (kräver user interaction)
     async enableAudio() {
-        if (!this.audioContext) {
-            await this.initialize();
+        try {
+            if (!this.audioContext) {
+                const initialized = await this.initialize();
+                if (!initialized) {
+                    throw new Error('Audio initialization failed');
+                }
+            }
+            
+            if (this.audioContext && this.audioContext.state === 'suspended') {
+                await this.audioContext.resume();
+            }
+            
+            this.soundEnabled = true;
+            this.musicEnabled = true;
+            
+            // Spela välkomst-ljud
+            setTimeout(() => this.playSound('kling'), 100);
+            
+            return this.soundEnabled;
+        } catch (error) {
+            console.log('Audio enable failed:', error);
+            // Sätt ljud som inaktiverat om det misslyckas
+            this.soundEnabled = false;
+            this.musicEnabled = false;
+            throw error; // Kasta vidare felet så game.js kan hantera det
         }
-        
-        if (this.audioContext && this.audioContext.state === 'suspended') {
-            await this.audioContext.resume();
-        }
-        
-        this.soundEnabled = true;
-        this.musicEnabled = true;
-        
-        // Spela välkomst-ljud
-        setTimeout(() => this.playSound('kling'), 100);
-        
-        return this.soundEnabled;
     }
 
     // Toggle funktioner
